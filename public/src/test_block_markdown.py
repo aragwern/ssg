@@ -1,10 +1,10 @@
 import unittest
 
-from block_markdown import markdown_to_blocks
+from block_markdown import BlockType, markdown_to_blocks, block_to_block_type
 
 
 class TestBlockMarkdown(unittest.TestCase):
-    def test_1(self):
+    def test_markdown_to_blocks(self):
         markdown_sample = """
         # This is a heading
 
@@ -28,6 +28,24 @@ class TestBlockMarkdown(unittest.TestCase):
         print(f"RESULT:\n{result}")
         print("======================================================================")
         self.assertEqual(expected, result)
+
+    def test_block_to_block_type(self):
+        self.assertEqual(block_to_block_type("# Heading"), BlockType.HEADING)
+        self.assertEqual(block_to_block_type("```\ncode\n```"), BlockType.CODE)
+        self.assertEqual(block_to_block_type("> quote"), BlockType.QUOTE)
+        self.assertEqual(
+            block_to_block_type("- unordered\n* list"), BlockType.UNORDERED_LIST
+        )
+        self.assertEqual(block_to_block_type("1. ordered"), BlockType.ORDERED_LIST)
+        self.assertEqual(block_to_block_type("Lorem ipsum"), BlockType.PARAGRAPH)
+        self.assertEqual(
+            block_to_block_type("100. Lorem ipsum\n200. Dolor est"),
+            BlockType.ORDERED_LIST,
+        )
+        self.assertEqual(
+            block_to_block_type("1. Lorem ipsum\nDolor est"),
+            BlockType.PARAGRAPH,
+        )
 
 
 if __name__ == "__main__":
