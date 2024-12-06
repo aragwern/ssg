@@ -4,6 +4,30 @@ from inline_markdown import text_to_textnodes
 from textnode import TextNode, text_node_to_html_node
 
 
+def generate_page(from_path: str, template_path: str, dest_path: str):
+    print(f"Generating page from {from_path} to {dest_path} using {template_path}")
+    template: str = ""
+    markdown: str = ""
+    with open(from_path, "r") as file:
+        markdown = file.read()
+    with open(template_path, "r") as file:
+        template = file.read()
+    title_text = extract_title(markdown)
+    article_html = markdown_to_html_node(markdown).to_html()
+    page_html = template.replace("{{ Title }}", title_text)
+    page_html = page_html.replace("{{ Article }}", article_html)
+    with open(dest_path, "w") as file:
+        file.write(page_html)
+
+
+def extract_title(markdown: str):
+    lines: list[str] = markdown.split("\n")
+    for line in lines:
+        if line.startswith("# "):
+            return line[2:].strip()
+    raise ValueError("There is no H1!")
+
+
 def markdown_to_html_node(markdown):
     raw_blocks = markdown_to_blocks(markdown)
     html_blocks = []
@@ -28,37 +52,38 @@ def markdown_to_html_node(markdown):
             case BlockType.ORDERED_LIST:
                 ol = create_ol_node(block)
                 html_blocks.append(ol)
-    body = ParentNode("body", html_blocks, None)
-    html = ParentNode(
-        "html",
-        [
-            body,
-        ],
-        None,
-    )
-    return html
+    article = ParentNode("article", html_blocks, None)
+
+    return article
+
+
+def text_to_children(text):
+    text_nodes = text_to_textnodes(text)
+    children = []
+    for text_node in text_nodes:
+        html_node = text_node_to_html_node(text_node)
+        children.append(html_node)
+    return children
 
 
 def create_ul_node(block: str):
     lines = block.split("\n")
-    children = []
+    html_items = []
     for line in lines:
-        grand_children_text_nodes = text_to_textnodes(line[2:])
-        for text_node in grand_children_text_nodes:
-            html_node = text_node_to_html_node(text_node)
-            children.append(ParentNode("li", html_node))
-    return ParentNode("ul", children)
+        text = line[2:]
+        children = text_to_children(text)
+        html_items.append(ParentNode("li", children))
+    return ParentNode("ul", html_items)
 
 
 def create_ol_node(block: str):
     lines = block.split("\n")
-    children = []
+    html_items = []
     for line in lines:
-        grand_children_text_nodes = text_to_textnodes(line.split(". ", 1)[1])
-        for text_node in grand_children_text_nodes:
-            html_node = text_node_to_html_node(text_node)
-            children.append(ParentNode("li", html_node))
-    return ParentNode("ol", children)
+        text = line.split(". ", 1)[1]
+        children = text_to_children(text)
+        html_items.append(ParentNode("li", children))
+    return ParentNode("ol", html_items)
 
 
 def create_p_node(block: str):

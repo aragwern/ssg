@@ -7,11 +7,29 @@ from html_generator import (
     create_blockquote_node,
     create_heading_node,
     markdown_to_html_node,
+    extract_title,
 )
 from htmlnode import ParentNode, LeafNode
 
 
 class TestHTMLGenerator(unittest.TestCase):
+    def test_extract_title_with_valid_markdown(self):
+        markdown = "# My Title\nThis is some content."
+        title = extract_title(markdown)
+        self.assertEqual(title, "My Title")
+
+    def test_extract_title_with_no_h1(self):
+        markdown = "## Subtitle\nThis is some content."
+        with self.assertRaises(ValueError) as context:
+            extract_title(markdown)
+        self.assertEqual(str(context.exception), "There is no H1!")
+
+    def test_extract_title_with_empty_markdown(self):
+        markdown = ""
+        with self.assertRaises(ValueError) as context:
+            extract_title(markdown)
+        self.assertEqual(str(context.exception), "There is no H1!")
+
     def test_markdown_to_html(self):
         text_md = """# Fedora Linux Flatpak cool apps to try for December
 
@@ -43,154 +61,146 @@ flatpak install flathub org.kde.ghostwriter
 """
         text_node = markdown_to_html_node(text_md)
         expected_html_node = ParentNode(
-            "html",
+            "article",
             [
                 ParentNode(
-                    "body",
+                    "h1",
                     [
-                        ParentNode(
-                            "h1",
-                            [
-                                LeafNode(
-                                    None,
-                                    "Fedora Linux Flatpak cool apps to try for December",
-                                ),
-                            ],
-                        ),
-                        ParentNode(
-                            "p",
-                            [
-                                LeafNode(
-                                    None,
-                                    "This article introduces projects available in Flathub with installation instructions.",
-                                ),
-                            ],
-                        ),
-                        ParentNode(
-                            "p",
-                            [
-                                LeafNode(
-                                    "a", "Flathub", {"href": "https://flathub.org/"}
-                                ),
-                                LeafNode(
-                                    None,
-                                    " is the place to get and distribute apps for all of Linux. It is powered by Flatpak, allowing Flathub apps to run on almost any Linux distribution.",
-                                ),
-                            ],
-                        ),
-                        ParentNode(
-                            "blockquote",
-                            [
-                                LeafNode(
-                                    None,
-                                    "Please read “",
-                                ),
-                                LeafNode(
-                                    "a",
-                                    "Getting started with Flatpak",
-                                    {
-                                        "href": "https://fedoramagazine.org/getting-started-flatpak/"
-                                    },
-                                ),
-                                LeafNode(
-                                    None,
-                                    "“. In order to enable flathub as your flatpak provider, use the instructions on the ",
-                                ),
-                                LeafNode(
-                                    "a",
-                                    "flatpak site",
-                                    {"href": "https://flatpak.org/setup/Fedora"},
-                                ),
-                                LeafNode(
-                                    None,
-                                    ".",
-                                ),
-                            ],
-                        ),
-                        ParentNode(
-                            "p",
-                            [
-                                LeafNode(
-                                    None,
-                                    "These apps are classified into four categories:",
-                                ),
-                            ],
-                        ),
-                        ParentNode(
-                            "ul",
-                            [
-                                ParentNode(
-                                    "li",
-                                    LeafNode(
-                                        None,
-                                        "Productivity",
-                                    ),
-                                ),
-                                ParentNode(
-                                    "li",
-                                    LeafNode(
-                                        None,
-                                        "Games",
-                                    ),
-                                ),
-                                ParentNode(
-                                    "li",
-                                    LeafNode(
-                                        None,
-                                        "Creativity",
-                                    ),
-                                ),
-                                ParentNode(
-                                    "li",
-                                    LeafNode(
-                                        None,
-                                        "Miscellaneous",
-                                    ),
-                                ),
-                            ],
-                        ),
-                        ParentNode(
-                            "h2",
-                            [
-                                LeafNode(
-                                    None,
-                                    "Ghostwriter",
-                                ),
-                            ],
-                        ),
-                        ParentNode(
-                            "p",
-                            [
-                                LeafNode(
-                                    "img",
-                                    "",
-                                    {
-                                        "src": "https://fedoramagazine.org/wp-content/uploads/2024/11/image-2-1024x505.png",
-                                        "alt": "alt text",
-                                    },
-                                ),
-                            ],
-                        ),
-                        ParentNode(
-                            "pre",
-                            [
-                                LeafNode(
-                                    "code",
-                                    "flatpak install flathub org.kde.ghostwriter",
-                                ),
-                            ],
-                        ),
-                        ParentNode(
-                            "p",
-                            [
-                                LeafNode(
-                                    "i",
-                                    "Ghostwriter is also available as an rpm in the Fedora Linux repositories",
-                                ),
-                            ],
+                        LeafNode(
+                            None,
+                            "Fedora Linux Flatpak cool apps to try for December",
                         ),
                     ],
-                    None,
+                ),
+                ParentNode(
+                    "p",
+                    [
+                        LeafNode(
+                            None,
+                            "This article introduces projects available in Flathub with installation instructions.",
+                        ),
+                    ],
+                ),
+                ParentNode(
+                    "p",
+                    [
+                        LeafNode("a", "Flathub", {"href": "https://flathub.org/"}),
+                        LeafNode(
+                            None,
+                            " is the place to get and distribute apps for all of Linux. It is powered by Flatpak, allowing Flathub apps to run on almost any Linux distribution.",
+                        ),
+                    ],
+                ),
+                ParentNode(
+                    "blockquote",
+                    [
+                        LeafNode(
+                            None,
+                            "Please read “",
+                        ),
+                        LeafNode(
+                            "a",
+                            "Getting started with Flatpak",
+                            {
+                                "href": "https://fedoramagazine.org/getting-started-flatpak/"
+                            },
+                        ),
+                        LeafNode(
+                            None,
+                            "“. In order to enable flathub as your flatpak provider, use the instructions on the ",
+                        ),
+                        LeafNode(
+                            "a",
+                            "flatpak site",
+                            {"href": "https://flatpak.org/setup/Fedora"},
+                        ),
+                        LeafNode(
+                            None,
+                            ".",
+                        ),
+                    ],
+                ),
+                ParentNode(
+                    "p",
+                    [
+                        LeafNode(
+                            None,
+                            "These apps are classified into four categories:",
+                        ),
+                    ],
+                ),
+                ParentNode(
+                    "ul",
+                    [
+                        ParentNode(
+                            "li",
+                            LeafNode(
+                                None,
+                                "Productivity",
+                            ),
+                        ),
+                        ParentNode(
+                            "li",
+                            LeafNode(
+                                None,
+                                "Games",
+                            ),
+                        ),
+                        ParentNode(
+                            "li",
+                            LeafNode(
+                                None,
+                                "Creativity",
+                            ),
+                        ),
+                        ParentNode(
+                            "li",
+                            LeafNode(
+                                None,
+                                "Miscellaneous",
+                            ),
+                        ),
+                    ],
+                ),
+                ParentNode(
+                    "h2",
+                    [
+                        LeafNode(
+                            None,
+                            "Ghostwriter",
+                        ),
+                    ],
+                ),
+                ParentNode(
+                    "p",
+                    [
+                        LeafNode(
+                            "img",
+                            "",
+                            {
+                                "src": "https://fedoramagazine.org/wp-content/uploads/2024/11/image-2-1024x505.png",
+                                "alt": "alt text",
+                            },
+                        ),
+                    ],
+                ),
+                ParentNode(
+                    "pre",
+                    [
+                        LeafNode(
+                            "code",
+                            "flatpak install flathub org.kde.ghostwriter",
+                        ),
+                    ],
+                ),
+                ParentNode(
+                    "p",
+                    [
+                        LeafNode(
+                            "i",
+                            "Ghostwriter is also available as an rpm in the Fedora Linux repositories",
+                        ),
+                    ],
                 ),
             ],
             None,
