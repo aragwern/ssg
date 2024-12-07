@@ -2,6 +2,34 @@ from block_markdown import BlockType, markdown_to_blocks, block_to_block_type
 from htmlnode import HTMLNode, LeafNode, ParentNode
 from inline_markdown import text_to_textnodes
 from textnode import TextNode, text_node_to_html_node
+import os
+
+
+def generate_pages_recursive(
+    dir_path_content: str, template_path: str, dest_dir_path: str
+):
+    print(
+        f"Generating all pages from {dir_path_content} to {dest_dir_path} using {template_path}"
+    )
+    dir = os.listdir(dir_path_content)
+    for item in dir:
+        item_src = os.path.join(dir_path_content, item)
+        item_dst = os.path.join(dest_dir_path, item)
+        if os.path.isdir(item_src):
+            os.mkdir(item_dst)
+            generate_pages_recursive(
+                item_src,
+                template_path,
+                item_dst,
+            )
+        elif item.endswith(".md"):
+            generate_page(
+                item_src,
+                template_path,
+                item_dst.replace(".md", ".html"),
+            )
+        else:
+            print(f"{item} is neither folder nor .md file, ignoring")
 
 
 def generate_page(from_path: str, template_path: str, dest_path: str):

@@ -1,6 +1,6 @@
 import os
 import shutil
-from html_generator import generate_page
+from html_generator import generate_pages_recursive
 
 
 def main():
@@ -8,7 +8,7 @@ def main():
         shutil.rmtree("public")
     os.mkdir("public", mode=0o777)
     copy_src_to_dst("static", "public")
-    generate_page("content/index.md", "template.html", "public/index.html")
+    generate_pages_recursive("content", "template.html", "public")
 
 
 def copy_src_to_dst(src: str, dst: str):
